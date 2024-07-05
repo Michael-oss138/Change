@@ -8,14 +8,14 @@ IPINFO_API_KEY = '2d9ec0c3be1ce0'
 OPENWEATHERMAP_API_KEY = '912267f3e1bca4f497d32101815d6b62'
 
 def get_geolocation(ip):
-    response = requests.get(f'https://ipinfo.io/{ip}?token={IPINFO_API_KEY}')
+    response = requests.get(f'https://ipinfo.io/{ip}?token=2d9ec0c3be1ce0')
     if response.status_code == 200:
         return response.json()
     else:
         return None
 
 def get_weather(lat, lon):
-    response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid={OPENWEATHERMAP_API_KEY}&units=metric')
+    response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=912267f3e1bca4f497d32101815d6b62&units=metric')
     if response.status_code == 200:
         return response.json()
     else:
