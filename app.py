@@ -36,7 +36,7 @@ def hello_world():
             "error": "Failed to get geolocation data"
         }, 500
     
-    city = location_data.get('city', 'Unknown')
+    city = location_data.get('city', 'Ikeja')
     loc = location_data.get('loc', '0,0').split(',')
     lat, lon = loc[0], loc[1]
     
