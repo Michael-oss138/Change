@@ -3,15 +3,20 @@ import requests
 
 app = Flask(__name__)
 
-# Replace with your actual API keys
+# Replace with your actual API key
 IPINFO_API_KEY = '2d9ec0c3be1ce0'
 OPENWEATHERMAP_API_KEY = '912267f3e1bca4f497d32101815d6b62'
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app)  # Trust X-Forwarded-For (if applicable)
+
 def get_geolocation(ip):
-    response = requests.get(f'https://ipinfo.io/{ip}?token=2d9ec0c3be1ce0')
-    if response.status_code == 200:
+    try:
+        response = requests.get(f'https://ipinfo.io/{ip}?token=2d9ec0c3be1ce0')
+        response.raise_for_status()  # Raise an error for unsuccessful requests (4xx, 5xx)
         return response.json()
-    else:
+    except requests.exceptions.RequestException as e:
+        print(f"Error getting geolocation data for {ip}: {e}")
         return None
 
 def get_weather(lat, lon):
@@ -21,22 +26,29 @@ def get_weather(lat, lon):
     else:
         return None
 
-@app.route('/api/hello')
+
+@app.route('/api')
 def hello_world():
     visitor_name = request.args.get('visitor_name', default='Michael')
-    
-    client_ip = request.remote_addr
+
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+
     if client_ip == '127.0.0.1':
-        # Use a default IP for testing locally
-        client_ip = '8.8.8.8'
-    
+        location = "Local Network"  # Generic message for local IP
+    else:
+        location_data = get_geolocation(client_ip)
+        if location_data:
+            location = location_data.get('city', 'Unknown')
+        else:
+            location = "Unknown"
+
     location_data = get_geolocation(client_ip)
     if not location_data:
         return {
             "error": "Failed to get geolocation data"
         }, 500
-    
-    city = location_data.get('city', 'Ikeja')
+
+    city = location_data.get('city', 'Unknown')
     loc = location_data.get('loc', '0,0').split(',')
     lat, lon = loc[0], loc[1]
     
